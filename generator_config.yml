@@ -1,0 +1,32 @@
+# Configuration for tfplugingen-openapi (terraform-plugin-codegen-openapi).
+#
+# Maps plexsphere API operations (from spec/plexsphere-v1.yaml) onto Terraform
+# resources and data sources. The tool reads the request/response schemas of the
+# referenced operations and emits a Provider Code Specification (provider-code-spec.json),
+# which tfplugingen-framework then turns into Go schema + model code.
+#
+# NOTE: this generates SCHEMA + MODELS only. The CRUD glue that calls
+# plexsphere-sdk-go is hand-written (see internal/provider/project_resource.go).
+provider:
+  name: plexsphere
+
+resources:
+  project:
+    create:
+      path: /v1/projects
+      method: POST
+    read:
+      path: /v1/projects/{id}
+      method: GET
+    update:
+      path: /v1/projects/{id}
+      method: PATCH
+    delete:
+      path: /v1/projects/{id}
+      method: DELETE
+
+data_sources:
+  project:
+    read:
+      path: /v1/projects/{id}
+      method: GET

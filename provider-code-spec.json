@@ -1,0 +1,185 @@
+{
+	"datasources": [
+		{
+			"name": "project",
+			"schema": {
+				"attributes": [
+					{
+						"name": "id",
+						"string": {
+							"computed_optional_required": "required",
+							"description": "Project identifier (UUIDv7). Bound on `/v1/projects/{id}` for\nthe tenancy CRUD surface and on\n`/v1/projects/{id}/credentials` for the operator-facing\nOpenBao Credential Broker inventory list.\n"
+						}
+					},
+					{
+						"name": "created_at",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Aggregate creation timestamp (UTC)."
+						}
+					},
+					{
+						"name": "description",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Optional free-form description. Empty string when the\noperator did not set one (the wire shape never carries\n`null` for this field).\n"
+						}
+					},
+					{
+						"name": "domain_id",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Parent Domain identifier (UUIDv7)."
+						}
+					},
+					{
+						"name": "name",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Human-readable Project name (trimmed at the aggregate)."
+						}
+					},
+					{
+						"name": "slug",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Kebab-case URL handle. Stable for the lifetime of the\nProject — see the `tenancy` tag description for the\nimmutability rationale.\n"
+						}
+					},
+					{
+						"name": "sub_range_cidr",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Optional canonical RFC 4632 sub-range reservation inside\nthe parent Domain's mesh_cidr. Cross-Project non-overlap\nwithin the parent Domain is enforced by the SQL GIST\nexclusion constraint on\n`plexsphere.project_mesh_ip_reservations`.\n"
+						}
+					},
+					{
+						"name": "updated_at",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Last-modified timestamp (UTC). Bumped by every mutator —\n`Rename`, `ChangeDescription`, `ReserveSubRange`,\n`ResizeSubRange`, `ReleaseSubRange`.\n"
+						}
+					}
+				]
+			}
+		}
+	],
+	"provider": {
+		"name": "plexsphere"
+	},
+	"resources": [
+		{
+			"name": "project",
+			"schema": {
+				"attributes": [
+					{
+						"name": "description",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Optional free-form description. Whitespace-only strings\nare rejected by the aggregate (the operator most likely\nfat-fingered the field instead of meaning to clear it).\n",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.LengthAtMost(1024)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "domain_id",
+						"string": {
+							"computed_optional_required": "required",
+							"description": "Parent Domain identifier (UUIDv7). The handler authorises\n`manage` on `domain:\u003cid\u003e` BEFORE invoking the service\n.\n"
+						}
+					},
+					{
+						"name": "name",
+						"string": {
+							"computed_optional_required": "required",
+							"description": "Human-readable Project name. Whitespace-only is rejected.",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.LengthBetween(1, 255)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "slug",
+						"string": {
+							"computed_optional_required": "required",
+							"description": "Kebab-case URL handle. The aggregate's `ParseSlug` enforces\nthe same regex; surfacing the pattern here lets the\ngenerated client validate before the round-trip.\n",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.LengthBetween(1, 64)"
+									}
+								},
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "regexp"
+											},
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^[a-z0-9]+(-[a-z0-9]+)*$\"), \"\")"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "sub_range_cidr",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Optional canonical RFC 4632 sub-range reservation. Must\nbe contained in the parent Domain's mesh_cidr and must\nnot overlap a sibling Project's reservation. Surfaces as\n`409 sub_range_overlap` on conflict.\n"
+						}
+					},
+					{
+						"name": "created_at",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Aggregate creation timestamp (UTC)."
+						}
+					},
+					{
+						"name": "id",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Project identifier (UUIDv7)."
+						}
+					},
+					{
+						"name": "updated_at",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Last-modified timestamp (UTC). Bumped by every mutator —\n`Rename`, `ChangeDescription`, `ReserveSubRange`,\n`ResizeSubRange`, `ReleaseSubRange`.\n"
+						}
+					}
+				]
+			}
+		}
+	],
+	"version": "0.1"
+}

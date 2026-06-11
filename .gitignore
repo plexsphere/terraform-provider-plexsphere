@@ -1,0 +1,14 @@
+# Provider build artifacts
+/terraform-provider-plexsphere
+/dist/
+*.test
+
+# Terraform working files
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+
+# Editor / OS
+.DS_Store
